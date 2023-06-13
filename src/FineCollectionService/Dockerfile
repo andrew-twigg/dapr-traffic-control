@@ -1,17 +1,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0-bullseye-slim AS build-env
-WORKDIR /app
+WORKDIR /source
 
 # Copy necessary files and restore as distinct layer
-COPY FineCollectionService.csproj ./
+COPY FineCollectionService.csproj .
 RUN dotnet restore
 
 # Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o out FineCollectionService.csproj
+COPY . .
+RUN dotnet publish -c Release -o /app FineCollectionService.csproj
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:7.0-bullseye-slim
-COPY --from=build-env /app/out .
+WORKDIR /app
+COPY --from=build-env /app .
 
 # Expose ports
 EXPOSE 6001/tcp
